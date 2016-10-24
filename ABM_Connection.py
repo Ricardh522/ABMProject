@@ -44,13 +44,12 @@ def queryConnection(database, connection):
 
             for row in rows:
                 values = []
-                geo_flag = 0
+
                 for v in row:
                     if type(v) == bytearray:
                         values.append(base64.b64encode(v))
                         # values.append(base64.b32encode(v))
-                        geo_flag = 1
-                    elif type(v) == unicode:
+                    elif type(v) is StringType:
                         values.append(v.encode('utf-8'))
                     elif type(v) is IntType:
                         values.append(str(int(v)).encode('utf-8'))
@@ -64,11 +63,13 @@ def queryConnection(database, connection):
                         values.append(v.encode('utf-8'))
                     elif type(v) is BooleanType:
                         values.append("True".encode('utf-8'))
-
-                if geo_flag and len(values):
+                try:
                     ws.append(values)
-                # ws.append(values)
-                print values
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    print("{} :: {}".format(traceback.print_tb(exc_traceback, limit=1, file=sys.stdout),
+                                            traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                                                      limit=2, file=sys.stdout)))
 
             dirpath = r"C:\Users\arorateam\{}".format(database)
             if not os.path.exists(dirpath):
@@ -78,7 +79,11 @@ def queryConnection(database, connection):
                 os.remove(outpath)
             gis_wb.save(outpath)
 
-for k, value in {"ABM_Reno_GIS": connGIS, "ABM_Reno_Prod": connPROD, "ABM_Reno_Test": connTEST}.iteritems():
+for k, value in {
+    # "ABM_Reno_GIS": connGIS,
+    "ABM_Reno_Prod": connPROD,
+    # "ABM_Reno_Test": connTEST
+}.iteritems():
     try:
         queryConnection(k, value)
     except:
